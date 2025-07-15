@@ -36,45 +36,54 @@ const courses = [
   },
   {
     id: 'introVet',
-    nombre: 'Intro. a la Medicina Vet.',
+    nombre: 'Intro. Medicina Vet.',
     semestre: 1,
     creditos: 6,
     requisitos: [],
   },
-  // Puedes continuar agregando todos los cursos desde los PDF usando el mismo formato:
-  // { id, nombre, semestre, creditos, requisitos: [ids de cursos previos] }
+  // Aquí irán TODOS los demás ramos...
 ];
 
 const estadoCursos = {}; // { idCurso: "locked" | "completed" | "unlocked" }
 
 function inicializarEstado() {
   courses.forEach((curso) => {
-    const requisitosCompletos = curso.requisitos.every(
-      (req) => estadoCursos[req] === 'completed'
-    );
-    estadoCursos[curso.id] = curso.requisitos.length === 0 ? 'unlocked' : 'locked';
+    estadoCursos[curso.id] =
+      curso.requisitos.length === 0 ? 'unlocked' : 'locked';
   });
 }
 
 function renderMalla() {
-  const grid = document.getElementById('grid');
-  grid.innerHTML = '';
+  const container = document.getElementById('semestres-container');
+  container.innerHTML = '';
 
-  for (let i = 1; i <= 10; i++) {
-    const semestreCursos = courses.filter((c) => c.semestre === i);
-    semestreCursos.forEach((curso) => {
-      const estado = estadoCursos[curso.id];
-      const div = document.createElement('div');
-      div.className = `course ${estado}`;
-      div.dataset.id = curso.id;
-      div.innerHTML = `
-        <h4>${curso.nombre}</h4>
-        <p>${curso.creditos} créditos</p>
-        <p>Sem ${curso.semestre}</p>
-      `;
-      div.onclick = () => toggleCurso(curso.id);
-      grid.appendChild(div);
-    });
+  for (let sem = 1; sem <= 10; sem++) {
+    const columna = document.createElement('div');
+    columna.className = 'semestre';
+
+    const titulo = document.createElement('div');
+    titulo.className = 'semestre-title';
+    titulo.textContent = `Semestre ${sem}`;
+    columna.appendChild(titulo);
+
+    courses
+      .filter((c) => c.semestre === sem)
+      .forEach((curso) => {
+        const estado = estadoCursos[curso.id];
+        const div = document.createElement('div');
+        div.className = `course ${estado}`;
+        div.dataset.id = curso.id;
+
+        div.innerHTML = `
+          <div class="nombre">${curso.nombre}</div>
+          <div class="creditos">${curso.creditos} créditos</div>
+        `;
+
+        div.onclick = () => toggleCurso(curso.id);
+        columna.appendChild(div);
+      });
+
+    container.appendChild(columna);
   }
 }
 
@@ -83,7 +92,6 @@ function toggleCurso(id) {
 
   estadoCursos[id] = 'completed';
 
-  // Verificar si desbloquea otros cursos
   courses.forEach((curso) => {
     if (estadoCursos[curso.id] === 'locked') {
       const requisitosCompletos = curso.requisitos.every(
@@ -96,6 +104,11 @@ function toggleCurso(id) {
   });
 
   renderMalla();
+}
+
+inicializarEstado();
+renderMalla();
+
 }
 
 inicializarEstado();
